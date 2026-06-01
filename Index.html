@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Athletic Stipend Manager</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&display=swap" rel="stylesheet"/>
+
+  <!-- Stylesheets (included as HTML files in Apps Script) -->
+  <?!= include('styles-main'); ?>
+  <?!= include('styles-components'); ?>
+  <?!= include('styles-dashboard'); ?>
+</head>
+<body>
+
+  <!-- ── LOADING SCREEN ── -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-logo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <rect x="4" y="4" width="18" height="18" rx="3" fill="var(--accent)"/>
+        <rect x="26" y="4" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.6"/>
+        <rect x="4" y="26" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.6"/>
+        <rect x="26" y="26" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.3"/>
+      </svg>
+      <span class="loading-title">Athletic Stipend Manager</span>
+    </div>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading your dashboard...</p>
+  </div>
+
+  <!-- ── UNAUTHORIZED SCREEN ── -->
+  <div id="unauth-screen" class="unauth-screen hidden">
+    <div class="unauth-card">
+      <div class="unauth-icon">⛔</div>
+      <h2>Access Restricted</h2>
+      <p>Your Google account is not authorized to access this application.</p>
+      <p id="unauth-email" class="unauth-email"></p>
+      <p>Please contact your district Athletic Director to request access.</p>
+    </div>
+  </div>
+
+  <!-- ── MAIN APP ── -->
+  <div id="app" class="app hidden">
+
+    <!-- Top Nav Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">
+          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <rect x="4" y="4" width="18" height="18" rx="3" fill="var(--accent)"/>
+            <rect x="26" y="4" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.6"/>
+            <rect x="4" y="26" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.6"/>
+            <rect x="26" y="26" width="18" height="18" rx="3" fill="var(--accent)" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="topbar-titles">
+          <span class="topbar-app-name">Athletic Stipend Manager</span>
+          <span id="topbar-school" class="topbar-school"></span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span id="topbar-user" class="topbar-user"></span>
+        <div class="topbar-avatar" id="topbar-avatar">—</div>
+      </div>
+    </header>
+
+    <div class="main-layout">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-view="dashboard">
+            <span class="nav-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </span>
+            <span class="nav-label">Dashboard</span>
+          </button>
+
+          <div class="nav-section-label">Seasons</div>
+
+          <button class="nav-item" data-view="Fall">
+            <span class="nav-icon">🍂</span>
+            <span class="nav-label">Fall Season</span>
+            <span class="nav-badge" id="badge-Fall">—</span>
+          </button>
+
+          <button class="nav-item" data-view="Winter">
+            <span class="nav-icon">❄️</span>
+            <span class="nav-label">Winter Season</span>
+            <span class="nav-badge" id="badge-Winter">—</span>
+          </button>
+
+          <button class="nav-item" data-view="Spring">
+            <span class="nav-icon">🌸</span>
+            <span class="nav-label">Spring Season</span>
+            <span class="nav-badge" id="badge-Spring">—</span>
+          </button>
+
+          <div class="nav-section-label">Tools</div>
+
+          <button class="nav-item" data-view="lookup">
+            <span class="nav-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </span>
+            <span class="nav-label">Stipend Lookup</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <span class="sidebar-version">v1.0</span>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="content-area" id="content-area">
+        <!-- Views injected here by JS -->
+      </main>
+
+    </div><!-- /.main-layout -->
+  </div><!-- /#app -->
+
+  <!-- ── MODAL OVERLAY ── -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-box" class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal Title</h3>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <div id="modal-body" class="modal-body"><!-- dynamic --></div>
+      <div id="modal-footer" class="modal-footer"><!-- dynamic --></div>
+    </div>
+  </div>
+
+  <!-- ── TOAST CONTAINER ── -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- JavaScript modules -->
+  <?!= include('api.html'); ?>
+  <?!= include('ui.html'); ?>
+  <?!= include('app.html'); ?>
+
+</body>
+</html>
