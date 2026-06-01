@@ -1,0 +1,99 @@
+<script>
+/* ============================================================
+   API.JS — Google Apps Script bridge
+   All server calls wrapped in Promises for clean async usage
+   ============================================================ */
+
+const API = (() => {
+
+  /** Generic wrapper: converts google.script.run callbacks → Promise */
+  function call(fnName, ...args) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(result => resolve(result))
+        .withFailureHandler(err  => reject(err))
+        [fnName](...args);
+    });
+  }
+
+  // ── AUTH ────────────────────────────────────────────────────
+  function getCurrentUserInfo()     { return call('getCurrentUserInfo'); }
+
+  // ── LOOKUP DATA ─────────────────────────────────────────────
+  function getStipendLookup()       { return call('getStipendLookup'); }
+  function getSportsList()          { return call('getSportsList'); }
+  function getCoachRoster()         { return call('getCoachRoster'); }
+
+  // ── SEASON DATA ─────────────────────────────────────────────
+  function getSeasonData(season)    { return call('getSeasonData', season); }
+
+  function saveCoachAssignment(season, data) {
+    return call('saveCoachAssignment', season, data);
+  }
+
+  function deleteCoachAssignment(season, rowIndex) {
+    return call('deleteCoachAssignment', season, rowIndex);
+  }
+
+  // ── SPORT OVERRIDES ─────────────────────────────────────────
+  function addSportOverride(season, gender, sport) {
+    return call('addSportOverride', season, gender, sport);
+  }
+
+  function removeSportOverride(season, gender, sport) {
+    return call('removeSportOverride', season, gender, sport);
+  }
+
+  // ── DASHBOARD ───────────────────────────────────────────────
+  function getDashboardSummary()    { return call('getDashboardSummary'); }
+
+  // ── CALCULATED HELPERS (client-side mirrors) ─────────────────
+
+  /**
+   * Calculate stipend from the loaded lookup table.
+   * @param {Array}  table      - result of getStipendLookup()
+   * @param {string} position   - e.g. 'Head Coach'
+   * @param {string} tier       - e.g. '4-6'
+   * @param {number} pct        - 0 to 1 (e.g. 0.5 for 50%)
+   * @returns {number}
+   */
+  function calcStipend(table, position, tier, pct) {
+    const row = table.find(r => r['Position'] === position);
+    if (!row) return 0;
+    const base = parseFloat(row[tier]) || 0;
+    return Math.round(base * pct * 100) / 100;
+  }
+
+  /**
+   * Split a stipend into 3 monthly payments.
+   * @param {number} total
+   * @param {number[]} [customSplit] - e.g. [0.34, 0.33, 0.33]
+   * @returns {number[]} [m1, m2, m3]
+   */
+  function splitStipend(total, customSplit) {
+    const s = customSplit || [1/3, 1/3, 1/3];
+    const m1 = Math.round(total * s[0] * 100) / 100;
+    const m2 = Math.round(total * s[1] * 100) / 100;
+    const m3 = Math.round((total - m1 - m2) * 100) / 100;
+    return [m1, m2, m3];
+  }
+
+  /**
+   * Format a dollar value.
+   */
+  function formatCurrency(n) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency', currency: 'USD', minimumFractionDigits: 2
+    }).format(n || 0);
+  }
+
+  return {
+    getCurrentUserInfo,
+    getStipendLookup, getSportsList, getCoachRoster,
+    getSeasonData, saveCoachAssignment, deleteCoachAssignment,
+    addSportOverride, removeSportOverride,
+    getDashboardSummary,
+    calcStipend, splitStipend, formatCurrency,
+  };
+})();
+</script>
